@@ -38,6 +38,7 @@ public class ChatApp {
             daemon.setDaemon(true);
             daemon.start();
 
+            chatGUI.addToLog("Connected to " + curentRoom.getRoomGroupAddress());
             //TODO: PASS TO GUI
         }catch (IOException e) {
             e.printStackTrace();
@@ -57,6 +58,8 @@ public class ChatApp {
             if (socket != null && groupAddress != null) {
                 socket.leaveGroup(groupAddress, null);
                 socket.close();
+
+                chatGUI.addToLog("Disconnected from " + groupAddress);
                 //TODO: PASS TO GUI
             }
         } catch (IOException e) {
