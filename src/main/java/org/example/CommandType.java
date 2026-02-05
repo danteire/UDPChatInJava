@@ -8,5 +8,6 @@ public enum CommandType {
     SENDTO,
     NICK_BUSY,
     WHOIS,
-    WRITING
+    WRITING,
+    MESSAGE,
 }

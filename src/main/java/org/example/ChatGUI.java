@@ -159,6 +159,7 @@ public class ChatGUI extends JFrame {
     private void handleConnect() {
         if (!isConnected) {
             try {
+                chatApp.setUserNickname(nickField.getText());
                 chatApp.connectToGeneral();
                 isConnected = true;
                 updateConnectionUI();
@@ -212,7 +213,7 @@ public class ChatGUI extends JFrame {
     public void handleSendMessage() {
         if (!messageField.getText().isEmpty()) {
             try{
-                chatApp.send(messageField.getText());
+                chatApp.send(messageField.getText(), CommandType.MESSAGE);
             }catch (Exception e){
                 JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
             }
@@ -221,7 +222,7 @@ public class ChatGUI extends JFrame {
     }
 
     public void addToLog(String message) {
-        chatArea.append("[" + nickField.getText() + "]: " + message + "\n");
+        chatArea.append(message + "\n");
     }
 
     private void handleListUsers() { }

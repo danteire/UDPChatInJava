@@ -1,7 +1,9 @@
 package org.example;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -15,28 +17,34 @@ public class ChatApp {
 
     private final ChatGUI chatGUI;
 
-    private final MessageHandler messageHandler = new MessageHandler();
-    private RoomHandler roomHandler = new RoomHandler();
-
+    private final MessageHandler messageHandler = new MessageHandler(this);
+    public RoomHandler roomHandler = new RoomHandler();
     public Room generalRoom = roomHandler.getGeneralRoom();
 
 
     protected MulticastSocket socket = null;
     private InetSocketAddress groupAddress = null;
 
-    protected byte[] buf = new byte[256];
-    private String userNickname = "";
+    protected byte[] buf = new byte[4096];
+
+    public String userNickname = "";
+    private MessageHandler.Sender sender;
+    private MessageHandler.Receiver receiver;
 
 
     public ChatApp(ChatGUI chatGUI) {
         this.chatGUI = chatGUI;
+        this.sender = new MessageHandler.Sender(this);
+        this.receiver = new MessageHandler.Receiver(this);
     }
+
     public void setUserNickname(String userNickname) {
         this.userNickname = userNickname;
     }
     public String getUserNickname() {
         return userNickname;
     }
+
 
     public void connectToGeneral() {
         try {
@@ -51,7 +59,7 @@ public class ChatApp {
             daemon.setDaemon(true);
             daemon.start();
 
-            chatGUI.addToLog("Connected to " + roomHandler.curentRoom.getRoomGroupAddress());
+            send(null, CommandType.JOIN);
         }catch (IOException e) {
             e.printStackTrace();
         }
@@ -89,11 +97,16 @@ public class ChatApp {
     }
 
 
-    public void send(String message, String command) throws IOException {
-        message = messageMapper(message, command);
-        byte[] buf = message.getBytes();
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, groupAddress);
-        socket.send(packet);
+    public void send(String message, CommandType command){
+        try {
+            message = sender.handleMessage(message, command);
+
+            byte[] buf = message.getBytes();
+            DatagramPacket packet = new DatagramPacket(buf, buf.length, groupAddress);
+            socket.send(packet);
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -102,16 +115,18 @@ public class ChatApp {
             while (!socket.isClosed()) {
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 socket.receive(packet);
-
                 String received = new String(packet.getData(), 0, packet.getLength());
-                chatGUI.addToLog(received);
-                if ("end".equals(received.trim())) {
-                    break;
+
+                try {
+                    String processedMsg = receiver.handleReceivedMessage(received);
+                    SwingUtilities.invokeLater(() -> chatGUI.addToLog(processedMsg));
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
-        } catch (IOException e) {
+        }catch (IOException e){
             if (!socket.isClosed()) {
-                //TODO: PASS TO GUI
+                e.printStackTrace();
             }
         }
     }
