@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class ChatGUI extends JFrame {
 
@@ -116,6 +117,7 @@ public class ChatGUI extends JFrame {
 
         // --- Eventy ---
         connectBtn.addActionListener(e -> handleConnect());
+        listUsersBtn.addActionListener(e -> handleListUsers());
         roomBtn.addActionListener(e -> handleRoomAction());
         uploadBtn.addActionListener(e -> handleFileUpload());
         sendBtn.addActionListener(e -> handleSendMessage());
@@ -212,6 +214,13 @@ public class ChatGUI extends JFrame {
 
     public void handleSendMessage() {
         if (!messageField.getText().isEmpty()) {
+            if(!sendToField.getText().isEmpty() && !(Objects.equals(sendToField.getText(), "all"))){
+                try{
+                    chatApp.sendTo(messageField.getText(), sendToField.getText());
+                }catch (Exception e){
+                    JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+                }
+            }
             try{
                 chatApp.send(messageField.getText(), CommandType.MESSAGE);
             }catch (Exception e){
@@ -225,7 +234,13 @@ public class ChatGUI extends JFrame {
         chatArea.append(message + "\n");
     }
 
-    private void handleListUsers() { }
+    private void handleListUsers() {
+        try {
+            chatApp.send(null, CommandType.WHOIS);
+        }catch (Exception e){
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+        }
+    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new ChatGUI().setVisible(true));

@@ -44,7 +44,9 @@ public class ChatApp {
     public String getUserNickname() {
         return userNickname;
     }
-
+    public void addToLogPass(String message) {
+        chatGUI.addToLog(message);
+    }
 
     public void connectToGeneral() {
         try {
@@ -59,7 +61,7 @@ public class ChatApp {
             daemon.setDaemon(true);
             daemon.start();
 
-            send(null, CommandType.JOIN);
+            send(null, CommandType.CONNECT);
         }catch (IOException e) {
             e.printStackTrace();
         }
@@ -72,7 +74,7 @@ public class ChatApp {
     public void connectToRoom(String roomName) {
         chatGUI.addToLog("Leaving room: " + roomHandler.curentRoom.getRoomName());
         roomHandler.joinToRoom(roomName);
-        chatGUI.addToLog("Joined room: " + roomHandler.curentRoom.getRoomName());
+        send(null, CommandType.JOIN);
     }
 
     public void leaveRoom() {
@@ -85,6 +87,7 @@ public class ChatApp {
 
     public void disconnect() {
         try {
+            send(null, CommandType.DISCONNECT);
             if (socket != null && groupAddress != null) {
                 socket.leaveGroup(groupAddress, null);
                 socket.close();
@@ -99,7 +102,18 @@ public class ChatApp {
 
     public void send(String message, CommandType command){
         try {
-            message = sender.handleMessage(message, command);
+            message = sender.handleMessage(message, command, null);
+
+            byte[] buf = message.getBytes();
+            DatagramPacket packet = new DatagramPacket(buf, buf.length, groupAddress);
+            socket.send(packet);
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void sendTo(String message, String receiver){
+        try {
+            message = sender.handleSendTo(message, receiver);
 
             byte[] buf = message.getBytes();
             DatagramPacket packet = new DatagramPacket(buf, buf.length, groupAddress);
@@ -130,4 +144,6 @@ public class ChatApp {
             }
         }
     }
+
+
 }
