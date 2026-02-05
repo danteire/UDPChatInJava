@@ -146,10 +146,9 @@ public class ChatGUI extends JFrame {
 
             if (result == JFileChooser.APPROVE_OPTION) {
                 File destination = saveChooser.getSelectedFile();
-                // MIEJSCE NA LOGIKĘ: chatApp.downloadFile(fileName, destination)
+                //TODO: Download file
                 chatArea.append("System: Pobieranie " + fileName + " do " + destination.getAbsolutePath() + "\n");
 
-                // Usuwamy z listy po pobraniu i wyłączamy przycisk
                 fileListModel.remove(selectedIndex);
                 downloadBtn.setEnabled(false);
             }
@@ -163,10 +162,14 @@ public class ChatGUI extends JFrame {
                 chatApp.connectToGeneral();
                 isConnected = true;
                 updateConnectionUI();
+
+                //TODO: RM later
+                //
                 // Symulacja otrzymania pliku po połączeniu (do testów UI)
                 onFileNotificationReceived("dokumentacja_projektu.pdf");
+
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Błąd: " + e.getMessage());
+                JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
             }
         } else {
             chatApp.disconnect();
@@ -177,6 +180,11 @@ public class ChatGUI extends JFrame {
 
     private void handleRoomAction() {
         if (!isInRoom) {
+            try{
+                //TODO: imlement room join logic
+            }catch (Exception e){
+                JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+            }
             isInRoom = true;
             roomBtn.setText("Leave");
             roomField.setEditable(false);
@@ -188,7 +196,7 @@ public class ChatGUI extends JFrame {
     }
 
     private void updateConnectionUI() {
-        connectBtn.setText(isConnected ? "Rozłącz" : "Połącz");
+        connectBtn.setText(isConnected ? "Disconnect" : "Connect");
         connectBtn.setBackground(isConnected ? Color.RED : Color.GREEN);
         nickField.setEnabled(!isConnected);
         roomBtn.setEnabled(isConnected);
@@ -197,13 +205,17 @@ public class ChatGUI extends JFrame {
     private void handleFileUpload() {
         JFileChooser fc = new JFileChooser();
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            chatArea.append("System: Wysyłasz plik: " + fc.getSelectedFile().getName() + "\n");
+            chatArea.append("System: Sending File: " + fc.getSelectedFile().getName() + "\n");
         }
     }
 
     public void handleSendMessage() {
         if (!messageField.getText().isEmpty()) {
-            addToLog(messageField.getText());
+            try{
+                chatApp.send(messageField.getText());
+            }catch (Exception e){
+                JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+            }
             messageField.setText("");
         }
     }

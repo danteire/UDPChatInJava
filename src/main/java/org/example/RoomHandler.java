@@ -8,12 +8,14 @@ public class RoomHandler {
     private String generalGroupAddress = "224.0.0.1";
     private int roomPort =7;
 
+    public Room curentRoom = null;
+
     public RoomHandler() {
         rooms = new ArrayList<Room>();
         rooms.add(new Room("General", generalGroupAddress, roomPort));
     }
 
-    private String getLastGroupAddress() {
+    private String getGroupAddress() {
         return rooms.getLast().getRoomGroupAddress();
     }
 
@@ -21,31 +23,22 @@ public class RoomHandler {
         return rooms.getFirst();
     }
 
-    public Room addRoom(String roomName){
-        Room room = new Room(roomName,roomPort);
-        room.setRoomGroupAddress(room.incramentRoomAddress(getLastGroupAddress()));
-        rooms.add(room);
-        return room;
-    }
-
-    public boolean containsRoom(final String name){
-        return rooms.stream().anyMatch(o -> o
-                .getRoomName()
-                .equals(name));
-    }
-
     public void joinToRoom(String roomName){
-        if(!containsRoom(roomName)){
-            Room room = addRoom(roomName);
-        }
-
-        //TODO: leave curremt room
-        //TODO: connect to a new room, set as current
+        curentRoom = new Room(roomName, getGroupAddress(), roomPort);
+        rooms.add(curentRoom);
     }
 
-    public void leaveRoom(Room room){
-        //TODO: disconnect from a current room
-        rooms.remove(room);
+    public void leaveRoom(){
+        rooms.remove(curentRoom);
+        curentRoom = getGeneralRoom();
+    }
+
+    public boolean isInRoom(String roomName){
+        if(roomName.equals(curentRoom.getRoomGroupAddress())){
+            return true;
+        }else{
+            return false;
+        }
     }
 
 }
