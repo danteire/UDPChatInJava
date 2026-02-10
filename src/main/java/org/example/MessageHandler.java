@@ -32,6 +32,17 @@ public class MessageHandler {
 
         public String  handleReceivedMessage(String payload) {
             Message message = Message.fromJson(payload);
+            boolean isForCurrentRoom = message.getRoomName().equals(chatApp.roomHandler.curentRoom.getRoomName());
+
+            boolean isPrivateToMe = (message.getCommandType() == CommandType.SENDTO
+                    && message.getRoomName().equals(chatApp.getUserNickname()));
+
+            boolean isPrivateFromMe = (message.getCommandType() == CommandType.SENDTO
+                    && message.getNickName().equals(chatApp.getUserNickname()));
+
+            if (!isForCurrentRoom && !isPrivateToMe && !isPrivateFromMe) {
+                return null;
+            }
             switch (message.getCommandType()){
                 case CONNECT:
                     return handleConnect(message);
@@ -41,6 +52,8 @@ public class MessageHandler {
                     return handleDisconnect(message);
                 case JOIN:
                     return handleJoin(message);
+                case LEAVE:
+                    return handleLeave(message);
                 case MESSAGE:
                     return handleMessage(message);
                 case WHOIS:
@@ -55,10 +68,10 @@ public class MessageHandler {
             }
         }
         public String handleJoin(Message message) {
-            return "[" + getFormattedTime(message.getTimestamp()) + "] [" + message.getNickName() + "]: " + message.getMessage();
+            return "[" + getFormattedTime(message.getTimestamp()) + "] "+ "[" + message.getRoomName() + "] "  +"[" + message.getNickName() + "]: " + message.getMessage();
         }
-        public void handleLeave(){
-
+        public String handleLeave(Message message) {
+            return "[" + getFormattedTime(message.getTimestamp()) + "] "+ "[" + message.getRoomName() + "] "  +"[" + message.getNickName() + "]: " + message.getMessage();
         }
         public String handleConnect(Message message) {
             if (message.getNickName().equals(chatApp.getUserNickname())) {
@@ -66,13 +79,11 @@ public class MessageHandler {
                     super.chatApp.send(null, CommandType.NICK_BUSY);
                     return null;
                 }
-                return "[" + getFormattedTime(message.getTimestamp()) + "] System: Welcome to room: " + message.getRoomName();
             }
-
-            return "[" + getFormattedTime(message.getTimestamp()) + "] System: " + message.getNickName() + " Joined room: " + message.getRoomName();
+            return "[" + getFormattedTime(message.getTimestamp()) + "] "+ "[" + message.getRoomName() + "] "  +"[" + message.getNickName() + "]: " + message.getMessage();
         }
         public String handleDisconnect(Message message) {
-            return "[" + getFormattedTime(message.getTimestamp()) + "] "+ message.getMessage();
+            return "[" + getFormattedTime(message.getTimestamp()) + "] "+ "[" + message.getRoomName() + "] "  +"[" + message.getNickName() + "]: "+ message.getMessage();
         }
         public void handleWhois(Message message) {
             if(message.getNickName().equals(chatApp.getUserNickname())){
@@ -89,11 +100,7 @@ public class MessageHandler {
             }
         }
         public String handleSendTo(Message message) {
-            if(Objects.equals(message.getRoomName(), chatApp.getUserNickname())){
-               return "[" + getFormattedTime(message.getTimestamp()) + "] [" + message.getNickName() + "] whispers: " + message.getMessage();
-            }else{
-                return null;
-            }
+            return "[" + getFormattedTime(message.getTimestamp()) + "] " + "[" + message.getNickName() + "] whispers to ["+ message.getRoomName() +"]: " + message.getMessage();
         }
         public String handleNickBusy(Message message) {
             boolean isMyNick = message.getNickName().equals(chatApp.getUserNickname());
@@ -107,11 +114,12 @@ public class MessageHandler {
             return null;
         }
         public String handleMessage(Message message) {
-            return "[" + getFormattedTime(message.getTimestamp()) + "] [" + message.getNickName() + "]: " + message.getMessage();
+            return "[" + getFormattedTime(message.getTimestamp()) + "] "+ "[" + message.getRoomName() + "] "  +"[" + message.getNickName() + "]: " + message.getMessage();
         }
-        public void handleWriting(){
-
-        }
+//        TODO: lejter mejbi
+//        public void handleWriting(){
+//
+//        }
     }
 
 
@@ -133,6 +141,9 @@ public class MessageHandler {
                 case JOIN:
                     payload = handleJoin();
                     break;
+                case LEAVE:
+                    payload = handleLeave();
+                    break;
                 case MESSAGE:
                     payload = handleMessage(payload);
                     break;
@@ -152,8 +163,9 @@ public class MessageHandler {
             Message message = new Message(CommandType.JOIN, chatApp.roomHandler.curentRoom.getRoomName(), chatApp.getUserNickname(), "User: " + chatApp.getUserNickname() + " joined room: " + chatApp.roomHandler.curentRoom.getRoomName());
             return message.toJson();
         }
-        public void handleLeave(){
-
+        public String handleLeave(){
+            Message message = new Message(CommandType.LEAVE, chatApp.roomHandler.curentRoom.getRoomName(),chatApp.getUserNickname(), "User: " + chatApp.getUserNickname() + " left room: " + chatApp.roomHandler.curentRoom.getRoomName());
+            return message.toJson();
         }
         public String handleConnect() {
             Message message = new Message(CommandType.CONNECT, chatApp.roomHandler.curentRoom.getRoomName(), chatApp.getUserNickname(), "Hello from: " + chatApp.getUserNickname());

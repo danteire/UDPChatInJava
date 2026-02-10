@@ -73,7 +73,7 @@ public class ChatApp {
             if (verificationTimer != null && verificationTimer.isRunning()) {
                 verificationTimer.stop();
             }
-            verificationTimer = new Timer(2000, e -> {
+            verificationTimer = new Timer(1000, e -> {
                 if (socket != null && !socket.isClosed() && !isConnectionVerified) {
                     isConnectionVerified = true;
                     chatGUI.addToLog("System: Nick zweryfikowany pomyślnie.");
@@ -99,10 +99,10 @@ public class ChatApp {
     }
 
     public void leaveRoom() {
-        if((roomHandler.curentRoom == null || roomHandler.curentRoom == generalRoom) && socket != null) {
+        if (roomHandler.curentRoom == null || roomHandler.curentRoom.getRoomName().equals("General")) {
             return;
         }
-        chatGUI.addToLog("Leaving room");
+        send("Has left the room.", CommandType.LEAVE);
         roomHandler.leaveRoom();
     }
 
@@ -113,12 +113,13 @@ public class ChatApp {
         try {
             if (isConnectionVerified) {
                 send(null, CommandType.DISCONNECT);
+                leaveRoom();
             }
             if (socket != null && groupAddress != null) {
                 socket.leaveGroup(groupAddress, null);
                 socket.close();
 
-                SwingUtilities.invokeLater(() -> chatGUI.addToLog("Disconnected from " + groupAddress));            }
+                SwingUtilities.invokeLater(() -> chatGUI.addToLog("Disconnected from " + roomHandler.curentRoom.getRoomName()));            }
         } catch (IOException e) {
             e.printStackTrace();
         }

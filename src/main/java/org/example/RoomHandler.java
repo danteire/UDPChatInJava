@@ -5,8 +5,8 @@ import java.util.List;
 
 public class RoomHandler {
     public List<Room> rooms;
-    private String generalGroupAddress = "224.0.0.1";
-    private int roomPort =7;
+    private String generalGroupAddress = "224.0.0.3";
+    private int roomPort = 7;
 
     public Room curentRoom = null;
 
@@ -24,21 +24,26 @@ public class RoomHandler {
     }
 
     public void joinToRoom(String roomName){
-        curentRoom = new Room(roomName, getGroupAddress(), roomPort);
-        rooms.add(curentRoom);
+        if (curentRoom.getRoomName().equals(roomName)){
+            return;
+        }
+
+        Room existing = rooms.stream()
+                .filter(r -> r.getRoomName().equals(roomName))
+                .findFirst()
+                .orElse(null);
+
+        if (existing != null) {
+            curentRoom = existing;
+        } else {
+            curentRoom = new Room(roomName, generalGroupAddress, roomPort);
+            rooms.add(curentRoom);
+        }
     }
 
     public void leaveRoom(){
         rooms.remove(curentRoom);
         curentRoom = getGeneralRoom();
-    }
-
-    public boolean isInRoom(String roomName){
-        if(roomName.equals(curentRoom.getRoomGroupAddress())){
-            return true;
-        }else{
-            return false;
-        }
     }
 
 }
