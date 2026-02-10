@@ -12,6 +12,7 @@ import java.net.MulticastSocket;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.TimerTask;
 
 public class ChatApp {
 
@@ -28,14 +29,17 @@ public class ChatApp {
     protected byte[] buf = new byte[4096];
 
     public String userNickname = "";
+    public boolean isConnectionVerified;
+
     private MessageHandler.Sender sender;
     private MessageHandler.Receiver receiver;
-
+    private Timer verificationTimer;
 
     public ChatApp(ChatGUI chatGUI) {
         this.chatGUI = chatGUI;
         this.sender = new MessageHandler.Sender(this);
         this.receiver = new MessageHandler.Receiver(this);
+        this.isConnectionVerified = false;
     }
 
     public void setUserNickname(String userNickname) {
@@ -47,9 +51,12 @@ public class ChatApp {
     public void addToLogPass(String message) {
         chatGUI.addToLog(message);
     }
+    public void setConnectionVerified(boolean verified) {this.isConnectionVerified = verified;}
+    public boolean isConnectionVerified() {return isConnectionVerified;}
 
     public void connectToGeneral() {
         try {
+            this.isConnectionVerified = false;
             roomHandler.curentRoom = generalRoom;
 
             socket = new MulticastSocket(roomHandler.curentRoom.getRoomPort());
@@ -62,6 +69,20 @@ public class ChatApp {
             daemon.start();
 
             send(null, CommandType.CONNECT);
+
+            if (verificationTimer != null && verificationTimer.isRunning()) {
+                verificationTimer.stop();
+            }
+            verificationTimer = new Timer(2000, e -> {
+                if (socket != null && !socket.isClosed() && !isConnectionVerified) {
+                    isConnectionVerified = true;
+                    chatGUI.addToLog("System: Nick zweryfikowany pomyślnie.");
+                }
+            });
+
+            verificationTimer.setRepeats(false);
+            verificationTimer.start();
+
         }catch (IOException e) {
             e.printStackTrace();
         }
@@ -86,17 +107,27 @@ public class ChatApp {
     }
 
     public void disconnect() {
+        if (verificationTimer != null) {
+            verificationTimer.stop();
+        }
         try {
-            send(null, CommandType.DISCONNECT);
+            if (isConnectionVerified) {
+                send(null, CommandType.DISCONNECT);
+            }
             if (socket != null && groupAddress != null) {
                 socket.leaveGroup(groupAddress, null);
                 socket.close();
 
-                chatGUI.addToLog("Disconnected from " + groupAddress);
-            }
+                SwingUtilities.invokeLater(() -> chatGUI.addToLog("Disconnected from " + groupAddress));            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public void setDisconnectGUI() {
+        SwingUtilities.invokeLater(() -> {
+            chatGUI.isConnected = false;
+            chatGUI.updateConnectionUI();
+        });
     }
 
 
@@ -133,7 +164,9 @@ public class ChatApp {
 
                 try {
                     String processedMsg = receiver.handleReceivedMessage(received);
-                    SwingUtilities.invokeLater(() -> chatGUI.addToLog(processedMsg));
+                    if (processedMsg != null) {
+                        SwingUtilities.invokeLater(() -> chatGUI.addToLog(processedMsg));
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

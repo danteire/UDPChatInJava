@@ -14,7 +14,7 @@ public class ChatGUI extends JFrame {
     private JList<String> fileList; // Lista widocznych plików do pobrania
     private DefaultListModel<String> fileListModel;
 
-    private boolean isConnected = false;
+    public boolean isConnected = false;
     private boolean isInRoom = false;
 
     private ChatApp chatApp;
@@ -115,7 +115,6 @@ public class ChatGUI extends JFrame {
 
         chatApp = new ChatApp(this);
 
-        // --- Eventy ---
         connectBtn.addActionListener(e -> handleConnect());
         listUsersBtn.addActionListener(e -> handleListUsers());
         roomBtn.addActionListener(e -> handleRoomAction());
@@ -161,7 +160,11 @@ public class ChatGUI extends JFrame {
     private void handleConnect() {
         if (!isConnected) {
             try {
-                chatApp.setUserNickname(nickField.getText());
+                String nickname = nickField.getText();
+                if(!validateNickname(nickname)) {
+                    return;
+                }
+                chatApp.setUserNickname(nickname);
                 chatApp.connectToGeneral();
                 isConnected = true;
                 updateConnectionUI();
@@ -198,7 +201,7 @@ public class ChatGUI extends JFrame {
         }
     }
 
-    private void updateConnectionUI() {
+    public void updateConnectionUI() {
         connectBtn.setText(isConnected ? "Disconnect" : "Connect");
         connectBtn.setBackground(isConnected ? Color.RED : Color.GREEN);
         nickField.setEnabled(!isConnected);
@@ -234,7 +237,44 @@ public class ChatGUI extends JFrame {
         chatArea.append(message + "\n");
     }
 
+    private boolean validateNickname(String nick) {
+        if (nick == null || nick.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Nickname cannot be empty!",
+                    "Błąd walidacji",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        if (nick.length() < 3 || nick.length() > 12) {
+            JOptionPane.showMessageDialog(this,
+                    "Nickname must be longer than 3 character and shorter than 12 characters!",
+                    "Validate Error",
+                    JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        if (nick.contains(" ")) {
+            JOptionPane.showMessageDialog(this,
+                    "Nickname cannot have whitespace characters!",
+                    "Validate Error",
+                    JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        if (!nick.matches("^[a-zA-Z0-9]+$")) {
+            JOptionPane.showMessageDialog(this,
+                    "Nickname can have only alphanumeric characters!",
+                    "Validate Error",
+                    JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        return true;
+    }
+
     private void handleListUsers() {
+        addToLog("List of Acitve Users:");
         try {
             chatApp.send(null, CommandType.WHOIS);
         }catch (Exception e){
