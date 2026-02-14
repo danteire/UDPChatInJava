@@ -1,12 +1,9 @@
 package org.example;
 
-import org.json.JSONObject;
 
 import java.time.Instant;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 
 public class MessageHandler {
 
@@ -87,7 +84,6 @@ public class MessageHandler {
         }
         public void handleWhois(Message message) {
             if(message.getNickName().equals(chatApp.getUserNickname())){
-                return;
             }else{
                 super.chatApp.send(message.getNickName(), CommandType.IAM);
             }
@@ -116,10 +112,7 @@ public class MessageHandler {
         public String handleMessage(Message message) {
             return "[" + getFormattedTime(message.getTimestamp()) + "] "+ "[" + message.getRoomName() + "] "  +"[" + message.getNickName() + "]: " + message.getMessage();
         }
-//        TODO: lejter mejbi
-//        public void handleWriting(){
-//
-//        }
+        public void handleWriting(){}
     }
 
 
@@ -195,8 +188,6 @@ public class MessageHandler {
             Message message = new Message(CommandType.MESSAGE, chatApp.roomHandler.curentRoom.getRoomName(), chatApp.getUserNickname(), payload);
             return message.toJson();
         }
-        public void handleWriting(){
-
-        }
+        public void handleWriting(){}
     }
 }

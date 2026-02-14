@@ -5,8 +5,8 @@ import java.util.List;
 
 public class RoomHandler {
     public List<Room> rooms;
-    private String generalGroupAddress = "224.0.0.3";
-    private int roomPort = 7;
+    private final String generalGroupAddress = "224.0.0.3";
+    private final int roomPort = 7;
 
     public Room curentRoom = null;
 

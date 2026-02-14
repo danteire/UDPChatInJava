@@ -1,18 +1,13 @@
 package org.example;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import javax.swing.*;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+
 import java.util.List;
-import java.util.TimerTask;
 
 public class ChatApp {
 
@@ -31,8 +26,8 @@ public class ChatApp {
     public String userNickname = "";
     public boolean isConnectionVerified;
 
-    private MessageHandler.Sender sender;
-    private MessageHandler.Receiver receiver;
+    private final MessageHandler.Sender sender;
+    private final MessageHandler.Receiver receiver;
     private Timer verificationTimer;
 
     public ChatApp(ChatGUI chatGUI) {

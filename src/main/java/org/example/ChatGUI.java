@@ -6,14 +6,20 @@ import java.util.Objects;
 
 public class ChatGUI extends JFrame {
 
-    private JTextField nickField, roomField, sendToField, messageField;
-    private JButton connectBtn, roomBtn, listUsersBtn, sendBtn;
-    private JTextArea chatArea;
+    private final JTextField nickField;
+    private final JTextField roomField;
+    private final JTextField sendToField;
+    private final JTextField messageField;
+    private final JButton connectBtn;
+    private final JButton roomBtn;
+    private final JButton listUsersBtn;
+    private final JButton sendBtn;
+    private final JTextArea chatArea;
 
     public boolean isConnected = false;
     private boolean isInRoom = false;
 
-    private ChatApp chatApp;
+    private final ChatApp chatApp;
 
     public ChatGUI() {
         setTitle("Multicast Room Chat");
