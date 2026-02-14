@@ -76,7 +76,7 @@ public class ChatApp {
             verificationTimer = new Timer(1000, e -> {
                 if (socket != null && !socket.isClosed() && !isConnectionVerified) {
                     isConnectionVerified = true;
-                    chatGUI.addToLog("System: Nick zweryfikowany pomyślnie.");
+                    chatGUI.addToLog("System: Nickname Verified.");
                 }
             });
 

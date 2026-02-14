@@ -113,6 +113,7 @@ public class ChatGUI extends JFrame {
                 JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
             }
         } else {
+            handleRoomAction();
             chatApp.disconnect();
             isConnected = false;
             updateConnectionUI();
@@ -134,7 +135,6 @@ public class ChatGUI extends JFrame {
             roomBtn.setText("Leave");
             roomField.setEditable(false);
         } else {
-
             try{
                 chatApp.leaveRoom();
             }catch (Exception e){

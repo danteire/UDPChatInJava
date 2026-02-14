@@ -109,7 +109,7 @@ public class MessageHandler {
                 chatApp.setDisconnectGUI();
                 chatApp.disconnect();
 
-                return "BŁĄD KRYTYCZNY: Nick '" + message.getNickName() + "' jest już zajęty!";
+                return "Error: Nick '" + message.getNickName() + "' is currently in use!";
             }
             return null;
         }
